@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# Brimbelle prepare-commit-msg hook
+# Auto-prefixes the commit message with the ticket ref extracted from the
+# current branch name (e.g. branch "S1-T01-foo" -> prefix "S1-T01: ").
+# Skips merge/squash/amend and messages that already start with a ref.
+
+msg_file="$1"
+commit_source="${2:-}"
+
+case "$commit_source" in
+  merge|squash|commit)
+    exit 0
+    ;;
+esac
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+ref=$(echo "$branch" | grep -oE '^S[0-9]+-T[0-9]+' || true)
+
+if [ -z "$ref" ]; then
+  exit 0
+fi
+
+if grep -qE '^S[0-9]+-T[0-9]+: ' "$msg_file"; then
+  exit 0
+fi
+
+tmpfile=$(mktemp)
+printf '%s: ' "$ref" > "$tmpfile"
+cat "$msg_file" >> "$tmpfile"
+mv "$tmpfile" "$msg_file"
