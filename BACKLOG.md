@@ -9,13 +9,26 @@ Rôles :
 - **Admin famille** : peut inviter, retirer des membres, promouvoir d'autres admins
 - **Membre** : peut écrire/publier, voir les articles publiés de sa famille
 
+## Organisation en sprints
+
+Les 11 tickets sont numérotés globalement (T01..T11) et regroupés en 4 sprints :
+
+| Sprint | Thème | Tickets |
+|---|---|---|
+| **S1 — Foundation** | auth + familles | T01, T02 |
+| **S2 — Content** | modèle, lecture, éditeur, image | T03, T04, T05, T06 |
+| **S3 — Polish MVP** | home, tags, recherche | T07, T08, T09 |
+| **S4 — Admin** | admin famille, super-admin | T10, T11 |
+
+Chaque ticket correspond à une branche `S<sprint>-T<ticket>-<slug>` et tous ses commits sont préfixés par `S<sprint>-T<ticket>:` (voir `CONTRIBUTING.md`).
+
 ## In progress
 
-_(aucune)_
+_(aucun)_
 
 ## Ready
 
-### [S-001] Authentification via `mix phx.gen.auth`
+### [S1-T01] Authentification via `mix phx.gen.auth`
 **As a** développeur **I want** un système d'auth Phoenix standard **so that** les stories suivantes aient un `current_scope` user et un cadre d'auth sur lequel s'appuyer.
 
 ### Acceptance criteria
@@ -26,17 +39,17 @@ _(aucune)_
 - [ ] Tests générés passent
 
 ### Out of scope
-- Familles, invitations (→ S-002)
-- Rôles (→ S-002)
-- Restriction d'accès aux pages métier (→ S-004)
+- Familles, invitations (→ S1-T02)
+- Rôles (→ S1-T02)
+- Restriction d'accès aux pages métier (→ S2-T04)
 
 ### Notes
 - Commit propre juste après le générateur, avant tout le reste.
-- `phx.gen.auth` génère déjà le pattern `current_scope` de Phoenix 1.8 — on l'étendra en S-002 plutôt que de le remplacer.
+- `phx.gen.auth` génère déjà le pattern `current_scope` de Phoenix 1.8 — on l'étendra en S1-T02 plutôt que de le remplacer.
 
 ---
 
-### [S-002] Familles, adhésions, invitations, super-admin
+### [S1-T02] Familles, adhésions, invitations, super-admin
 **As a** user **I want** appartenir à une famille (soit en créant la mienne à l'inscription, soit via un lien d'invitation) **so that** mon contenu soit scopé à cette famille et que je ne voie que le contenu de ma famille.
 
 ### Acceptance criteria
@@ -51,7 +64,7 @@ _(aucune)_
 - [ ] `create_family/2(user, attrs)` — crée la famille et une membership `admin` pour le user
 - [ ] `create_invitation/2(scope, attrs)` — admin seulement, retourne `%FamilyInvitation{}` avec URL utilisable
 - [ ] `accept_invitation/2(user, token)` — ajoute une membership `member`, marque l'invitation usée ; erreurs si expirée, déjà utilisée, token inconnu
-- [ ] `list_memberships/1(user)`, `promote_to_admin/2(scope, membership)`, `revoke_invitation/2(scope, invitation)` (utilisées en S-008, définies ici)
+- [ ] `list_memberships/1(user)`, `promote_to_admin/2(scope, membership)`, `revoke_invitation/2(scope, invitation)` (utilisées en S4-T10, définies ici)
 
 **Flux d'inscription :**
 - [ ] `/users/register?invite=TOKEN` → inscription + acceptation automatique de l'invitation
@@ -76,8 +89,8 @@ _(aucune)_
 ### Out of scope
 - Sélecteur de famille dans l'UI (1 seule famille visible = pas de choix à faire au MVP)
 - Invitation par email via Swoosh (→ Icebox)
-- Gestion des membres (liste, retrait) (→ S-008)
-- Backoffice super-admin (→ S-009)
+- Gestion des membres (liste, retrait) (→ S4-T10)
+- Backoffice super-admin (→ S4-T11)
 
 ### Notes
 - Schéma multi-famille (table `family_memberships`) dès maintenant pour ne pas bloquer le futur, même si l'UI ne gère qu'une famille par user.
@@ -86,7 +99,7 @@ _(aucune)_
 
 ---
 
-### [S-003] Modèle article avec blocs et scoping famille
+### [S2-T03] Modèle article avec blocs et scoping famille
 **As a** développeur **I want** que les articles appartiennent à une famille (et un auteur), soient composés de blocs ordonnés, et soient filtrables par état de publication **so that** les stories d'éditeur et de lecture aient un modèle de données propre.
 
 ### Acceptance criteria
@@ -121,8 +134,8 @@ _(aucune)_
 - [ ] Reorder met à jour `position` correctement
 
 ### Out of scope
-- Type `image` (→ S-006)
-- UI (→ S-004, S-005)
+- Type `image` (→ S2-T06)
+- UI (→ S2-T04, S2-T05)
 
 ### Notes
 - **Décision règle d'édition** : auteur + admin famille peuvent éditer/supprimer un article publié. Brouillons = auteur seul. À reconfirmer si trop permissif.
@@ -131,7 +144,7 @@ _(aucune)_
 
 ---
 
-### [S-004] Feed famille et lecture d'article (auth-only)
+### [S2-T04] Feed famille et lecture d'article (auth-only)
 **As a** membre d'une famille authentifié **I want** voir la liste des articles publiés de ma famille et lire un article **so that** je consomme le contenu de ma famille.
 
 ### Acceptance criteria
@@ -143,17 +156,17 @@ _(aucune)_
 - [ ] Tests : isolation inter-familles, 404 sur brouillon d'autrui, rendu des 3 types de blocs
 
 ### Out of scope
-- Bloc image (→ S-006)
-- Édition (→ S-005)
-- Home page (→ S-007)
+- Bloc image (→ S2-T06)
+- Édition (→ S2-T05)
+- Home page (→ S3-T07)
 
 ### Notes
-- Dépend de S-001, S-002, S-003.
+- Dépend de S1-T01, S1-T02, S2-T03.
 - Les composants de rendu de bloc seront réutilisés par l'éditeur (preview).
 
 ---
 
-### [S-005] Éditeur d'articles avec blocs et drag & drop
+### [S2-T05] Éditeur d'articles avec blocs et drag & drop
 **As a** membre authentifié **I want** créer/éditer un article en composant des blocs (heading, paragraph, quote) que je peux réordonner par glisser-déposer **so that** je compose visuellement un contenu structuré.
 
 ### Acceptance criteria
@@ -167,18 +180,18 @@ _(aucune)_
 - [ ] Tests LiveView : ajout, édition, suppression, reorder (événement simulé), erreur d'autorisation
 
 ### Out of scope
-- Bloc image (→ S-006)
-- Publication / brouillon (→ S-007)
+- Bloc image (→ S2-T06)
+- Publication / brouillon (→ S3-T07)
 - Preview fidèle (→ Icebox)
 
 ### Notes
-- Dépend de S-003 et S-004 (composants de rendu réutilisés).
+- Dépend de S2-T03 et S2-T04 (composants de rendu réutilisés).
 - Sortable.js importé via `assets/js/app.js` (pas de `<script>` inline — règle `AGENTS.md`).
 - Pas de LiveComponent par bloc : switch sur type dans la LiveView parente.
 
 ---
 
-### [S-006] Bloc image avec upload (max 3 par article)
+### [S2-T06] Bloc image avec upload (max 3 par article)
 **As a** membre authentifié **I want** insérer jusqu'à 3 blocs image avec upload de fichier, légende et alt text **so that** mes articles puissent contenir des visuels sans devenir une galerie lourde.
 
 ### Acceptance criteria
@@ -203,7 +216,7 @@ _(aucune)_
 
 ---
 
-### [S-007] Home feed famille + publier / dépublier
+### [S3-T07] Home feed famille + publier / dépublier
 **As a** membre authentifié **I want** arriver sur une page d'accueil qui montre les 5 derniers articles publiés de ma famille **so that** je découvre le contenu récent sans chercher.
 
 ### Acceptance criteria
@@ -219,11 +232,11 @@ _(aucune)_
 - Partage public d'un brouillon via lien secret (→ Icebox)
 
 ### Notes
-- Dépend de S-004 et S-005.
+- Dépend de S2-T04 et S2-T05.
 
 ---
 
-### [S-008] Tags d'articles
+### [S3-T08] Tags d'articles
 **As a** membre authentifié **I want** associer un ou plusieurs tags à mes articles et voir les tags utilisés dans ma famille **so that** je puisse organiser et retrouver le contenu par thème.
 
 ### Acceptance criteria
@@ -259,12 +272,12 @@ _(aucune)_
 - Couleurs de tags (→ Icebox)
 
 ### Notes
-- Dépend de S-003 (modèle article), S-005 (éditeur pour la saisie).
+- Dépend de S2-T03 (modèle article), S2-T05 (éditeur pour la saisie).
 - Un tag sans article rattaché reste en base (nettoyage manuel plus tard si besoin).
 
 ---
 
-### [S-009] Recherche par titre et tag
+### [S3-T09] Recherche par titre et tag
 **As a** membre authentifié **I want** rechercher des articles de ma famille par titre ou par tag **so that** je retrouve rapidement un contenu précis quand le feed ne suffit plus.
 
 ### Acceptance criteria
@@ -282,12 +295,12 @@ _(aucune)_
 - Historique de recherche, tri par pertinence
 
 ### Notes
-- Dépend de S-008 pour le filtre tag.
+- Dépend de S3-T08 pour le filtre tag.
 - `LIKE` suffit au MVP (petit volume, DB SQLite locale). Migration vers FTS5 si le volume explose.
 
 ---
 
-### [S-010] Administration d'une famille
+### [S4-T10] Administration d'une famille
 **As an** admin d'une famille **I want** voir la liste des membres, retirer des membres, révoquer des invitations non utilisées, promouvoir un membre en admin **so that** je puisse maintenir la composition de ma famille.
 
 ### Acceptance criteria
@@ -307,7 +320,7 @@ _(aucune)_
 
 ---
 
-### [S-011] Backoffice super-admin
+### [S4-T11] Backoffice super-admin
 **As a** super-admin **I want** accéder à un backoffice listant toutes les familles et tous les users, avec possibilité de créer/supprimer, promouvoir/rétrograder **so that** je puisse administrer la plateforme sans toucher à la DB.
 
 ### Acceptance criteria

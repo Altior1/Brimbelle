@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Brimbelle pre-commit hook
+# Refuses direct commits on master/main. Work on a ticket branch instead.
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [ "$branch" = "master" ] || [ "$branch" = "main" ]; then
+  echo ""
+  echo "Commit direct sur '$branch' interdit."
+  echo ""
+  echo "Cree une branche ticket avant de commit :"
+  echo "    git checkout -b S<n>-T<nn>-<slug>"
+  echo ""
+  echo "Exemple :"
+  echo "    git checkout -b S1-T01-phx-gen-auth"
+  echo ""
+  echo "Bypass en dernier recours (README/docs uniquement) :"
+  echo "    git commit --no-verify ..."
+  echo ""
+  exit 1
+fi
+
+exit 0

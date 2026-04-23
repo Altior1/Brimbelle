@@ -35,3 +35,14 @@ Asset pipeline: `mix assets.build` (dev) / `mix assets.deploy` (prod with `phx.d
 - HTTP client: use `Req` (already a dep). Do not add `httpoison`, `tesla`, or `httpc`.
 - Migrations auto-run at boot in releases (`RELEASE_NAME` set) via `Ecto.Migrator` in the supervision tree — don't add a separate release migration task.
 - Windows dev: `install.bat` bootstraps Erlang/OTP + Elixir into `%USERPROFILE%\.elixir-install`.
+
+## Git workflow
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full version. Quick reference:
+
+- **No direct commits on `master`.** Always work on a branch named `S<sprint>-T<ticket>-<slug>` (e.g. `S1-T01-phx-gen-auth`). The `.githooks/pre-commit` hook blocks direct commits on master.
+- **Commit message format:** `S<sprint>-T<ticket>: <subject>` (subject ≤ 72 chars). Enforced by `.githooks/commit-msg`. The `prepare-commit-msg` hook auto-fills the ref from the branch name, so you just type the subject.
+- **Hook activation (once per clone):** `git config core.hooksPath .githooks` + `chmod +x .githooks/*` on non-Windows. Without this, hooks are inert.
+- **CI** (`.github/workflows/ci.yml`) runs on PRs to `master` and on pushes to `master`: `mix deps.unlock --check-unused`, `mix compile --warning-as-errors`, `mix format --check-formatted`, `mix test`. If a change passes `mix precommit` locally, CI will almost always pass.
+- **Ticket IDs** in `BACKLOG.md` (`S1-T01`, `S2-T03`, etc.) are the single source of truth — same ref used in branch names, commit messages, and backlog headings.
+- Merge commits, reverts, and fixup/squash commits are exempt from the commit-msg check.
